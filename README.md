@@ -1,5 +1,7 @@
 # Reef Fish Survey Helper
 
+![Fish Icon](fish.png)
+
 **A Chrome extension that makes REEF fish survey identification easier with instant photo previews.**
 
 Never wonder which fish you're entering again! This extension adds species photo thumbnails directly to reef.org survey forms, helping you jog your memory and save the headache of memorizing hundreds of species names.
