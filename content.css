@@ -1,0 +1,143 @@
+/*
+ * Reef Fish Survey Helper — content.css
+ *
+ * Tooltip with an ocean-lab aesthetic: crisp white card, deep-sea accent
+ * colour, clean monospace scientific name, subtle depth shadow.
+ */
+
+/* ── Tooltip container ─────────────────────────────────────────────────── */
+
+.rfsh-tooltip {
+  /* Layout */
+  position: absolute;
+  z-index: 2147483647;        /* always on top */
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 260px;
+  padding: 10px;
+  box-sizing: border-box;
+
+  /* Appearance */
+  background: #ffffff;
+  border: 1px solid #c8dde8;
+  border-radius: 10px;
+  box-shadow:
+    0 2px 6px rgba(0, 60, 100, 0.10),
+    0 8px 24px rgba(0, 60, 100, 0.14);
+
+  /* Entry animation */
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity  0.14s ease,
+    transform 0.14s ease;
+
+  pointer-events: none;   /* don't interfere with form interactions */
+}
+
+.rfsh-tooltip.rfsh-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Photo area ─────────────────────────────────────────────────────────── */
+
+.rfsh-photo-wrap {
+  flex-shrink: 0;
+  width: 75px;
+  height: 75px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: #e8f3f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rfsh-photo {
+  display: none;
+  width: 75px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 7px;
+}
+
+/* ── Spinner ────────────────────────────────────────────────────────────── */
+
+.rfsh-spinner {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border: 3px solid #c0d8e8;
+  border-top-color: #006fa6;
+  border-radius: 50%;
+  animation: rfsh-spin 0.75s linear infinite;
+}
+
+@keyframes rfsh-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Fallback emoji when no photo is found */
+.rfsh-fallback-icon {
+  width: auto;
+  height: auto;
+  border: none;
+  animation: none !important;
+  font-size: 30px;
+  line-height: 1;
+  background: transparent;
+}
+
+/* ── Text block ─────────────────────────────────────────────────────────── */
+
+.rfsh-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;         /* allow text to wrap inside flex */
+  padding-top: 2px;
+}
+
+.rfsh-common {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0d2d42;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.rfsh-sci {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 10.5px;
+  font-style: italic;
+  color: #3a6070;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.rfsh-credit {
+  display: inline-block;
+  margin-top: 6px;
+  font-family: sans-serif;
+  font-size: 10px;
+  color: #888;
+  text-decoration: none;
+  pointer-events: auto;     /* credit link should be clickable */
+}
+
+.rfsh-credit:hover {
+  color: #006fa6;
+  text-decoration: underline;
+}
+
+/* ── Highlight the hovered row slightly ─────────────────────────────────── */
+
+.fishdarkcolor:hover,
+.fishlightcolor:hover,
+.fishrarecolor:hover {
+  outline: 2px solid #006fa6;
+  outline-offset: -2px;
+}

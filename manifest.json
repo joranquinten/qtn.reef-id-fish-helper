@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Reef Fish Survey Helper",
+  "icons": {
+    "16": "icon/16.png",
+    "32": "icon/32.png",
+    "48": "icon/48.png",
+    "128": "icon/128.png"
+  },
+  "version": "1.1.0",
+  "description": "Adds species photo thumbnails on hover to reef.org fish survey forms.",
+  "host_permissions": [
+    "https://api.inaturalist.org/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.reef.org/*",
+        "*://reef.org/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_end",
+      "all_frames": true
+    }
+  ]
+}
