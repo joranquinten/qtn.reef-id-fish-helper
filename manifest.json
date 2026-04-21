@@ -1,14 +1,20 @@
 {
   "manifest_version": 3,
   "name": "Reef Fish Survey Helper",
+  "version": "1.1.0",
+  "description": "Adds species photo thumbnails on hover to reef.org fish survey forms.",
+  "default_locale": "en_US",
+  "author": "Joran Quinten",
+  "homepage_url": "https://github.com/joranquinten/qtn.reef-id-fish-helper",
+  "short_description": "Helps the reef.org submission by including thumbnails of each species",
   "icons": {
     "16": "icon/16.png",
     "32": "icon/32.png",
     "48": "icon/48.png",
     "128": "icon/128.png"
   },
-  "version": "1.1.0",
-  "description": "Adds species photo thumbnails on hover to reef.org fish survey forms.",
+  "minimum_chrome_version": "88",
+  "category": "Productivity",
   "host_permissions": [
     "https://api.inaturalist.org/*"
   ],
