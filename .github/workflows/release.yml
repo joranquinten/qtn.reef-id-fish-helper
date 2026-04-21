@@ -1,0 +1,115 @@
+name: Automated Release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: |
+          npm install -g semver
+          sudo apt-get update && sudo apt-get install -y jq
+          
+      - name: Get current version
+        id: version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./src/manifest.json').version")
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+      - name: Generate changelog and determine bump type
+        id: changelog
+        run: |
+          # Get PR descriptions since last release
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          if [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log $LAST_TAG..HEAD --merges --pretty=format:"- %s")
+          else
+            COMMITS=$(git log --merges --pretty=format:"- %s")
+          fi
+          
+          # Clean up merge messages and extract PR info
+          CHANGELOG=$(echo "$COMMITS" | sed 's/Merge pull request #\([0-9]*\) from .*/PR #\1/' | head -20)
+          
+          # Determine bump type based on commit messages
+          if echo "$COMMITS" | grep -i -E "(feat|feature|major|breaking|change)" > /dev/null; then
+            BUMP_TYPE="minor"
+          elif echo "$COMMITS" | grep -i -E "(fix|bug|patch)" > /dev/null; then
+            BUMP_TYPE="patch"
+          else
+            BUMP_TYPE="patch"  # Default to patch
+          fi
+          
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="- Initial release or no PRs found"
+          fi
+          
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+          
+      - name: Calculate new version
+        id: bump
+        run: |
+          CURRENT_VERSION="${{ steps.version.outputs.current_version }}"
+          BUMP_TYPE="${{ steps.changelog.outputs.bump_type }}"
+          NEW_VERSION=$(semver -i $BUMP_TYPE $CURRENT_VERSION)
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+          
+      - name: Update manifest version
+        run: |
+          NEW_VERSION="${{ steps.bump.outputs.new_version }}"
+          # Update version in manifest.json
+          jq --arg version "$NEW_VERSION" '.version = $version' src/manifest.json > src/manifest.json.tmp && mv src/manifest.json.tmp src/manifest.json
+          
+          # Commit the version bump
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add src/manifest.json
+          git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
+          git push
+          
+      - name: Create release zip
+        run: |
+          NEW_VERSION="${{ steps.bump.outputs.new_version }}"
+          cd src
+          zip -r ../reef-fish-helper-v$NEW_VERSION.zip .
+          
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.bump.outputs.new_version }}
+          name: Release v${{ steps.bump.outputs.new_version }}
+          body: |
+            ## Changes
+            ${{ steps.changelog.outputs.changelog }}
+            
+            **Installation:**
+            Download `reef-fish-helper-v${{ steps.bump.outputs.new_version }}.zip` and install as an unpacked extension in Chrome.
+          draft: false
+          prerelease: false
+          files: |
+            reef-fish-helper-v${{ steps.bump.outputs.new_version }}.zip
